@@ -2,65 +2,43 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "header.h"
+#include "cache.h"
 
 
-Node *find_dividers(int number, Node **cache) {
-    Node *node = (Node *)malloc(sizeof(Node));
-    node->value = number;
-
-    Node **interim_dividers = (Node **)malloc(number * sizeof(Node *));
-    for (int i = 0; i < number; i++) {
-        interim_dividers[i] = NULL;
-    }
+void build_divider_tree(int number, BinaryTree * bd) {
+    binary_tree_insert(number, bd);
+    int * interim_dividers = (int *)calloc(number, sizeof(int));
 
     int count = 0;
-    for (int i = 2; i <= sqrt(number); i++) {
-        if (number % i == 0 && cache[i] != NULL) {
-            interim_dividers[i] = cache[i];
-            count++;
-        } else {
-            if (number % i == 0) {
-                cache[i] = find_dividers(i, cache);
-                interim_dividers[i] = cache[i];
-                count++;
-            } else {
-                interim_dividers[i] = NULL;
-            }
-        }
+    for (int i = 2; i <= sqrt(number); i++){
+        if (number % i == 0)
+        {
+            binary_tree_insert(i, bd);
+            binary_tree_insert(number / i, bd);
 
-        if (cache[number / i] != NULL) {
-            interim_dividers[number / i] = cache[number / i];
-            count++;
-        } else {
-            if (number % i == 0) {
-                cache[number / i] = find_dividers(number / i, cache);
-                interim_dividers[number / i] = cache[number / i];
-                count++;
-            } else {
-                interim_dividers[number / i] = NULL;
-            }
+            interim_dividers[i] = i;
+            interim_dividers[number / i] = number / i;
+            count += 2;
         }
     }
-    
-    node->count_dividers = count;
-    node->dividers = (Node **)malloc(count * sizeof(Node));
 
+    Node * n = binary_tree_find(number, bd);
+    n->count_dividers = count;
+    n->dividers = (Node **)malloc(count * sizeof(Node));
     int j = 0;
-    for (int i = 0; i < number; i++) {
-        if (interim_dividers[i] != NULL) {
-            node->dividers[j] = interim_dividers[i];
+    for (size_t i = 0; i < number; i++)
+    {
+        if (interim_dividers[i] != 0)
+        {
+            build_divider_tree(interim_dividers[i], bd);
+            n->dividers[j] = binary_tree_find(interim_dividers[i], bd);
             j++;
         }
     }
-
-    free(interim_dividers);
-
-    //printf("Value:%d \tDividers:%d \n", number, count);
-    return node;
+    
 }
 
-void print(Node * n){
+void print_node(Node * n){
     printf("%d \n| \n", n->value );
     for (size_t i = 0; i < n->count_dividers; i++) { 
         printf("%d\n| \n", n->dividers[i]->value);
@@ -72,26 +50,16 @@ void print(Node * n){
 
 int main(){
     
-    int start, end;
+    BinaryTree * cache = binary_tree_init(32);
 
-    printf("Enter start: ");
-    scanf("%d", &start);
-
-    printf("Enter end: ");
-    scanf("%d", &end);
-
-    Node ** cache = (Node **)malloc(end * sizeof(Node));
-
-    for (size_t i = 0; i < end; i++)
+    for (size_t i = 20; i <= 32; i++)
     {
-        cache[i] = NULL;
+        build_divider_tree(i, cache);
     }
 
-    for (size_t i = start; i <= end ; i++)
-    {
-        Node * n = find_dividers(i, cache);
-        print(n);
-    }
+    print_node(binary_tree_find(32, cache));
+
+    binary_tree_print(cache);
     
     return 0;
 }

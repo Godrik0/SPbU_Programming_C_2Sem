@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "header.h"
+#include "cache.h"
 
 BinaryTree * binary_tree_init(int key){
     BinaryTree * bt = (BinaryTree *)malloc(sizeof(BinaryTree));
@@ -13,6 +13,17 @@ BinaryTree * binary_tree_init(int key){
     bt->root->value = key;
     bt->root->left = NULL;
     bt->root->right = NULL;
+
+    return bt;
+}
+
+Node * node_init(int key){
+    Node * n =(Node *)malloc(sizeof(Node));
+    n->value = key;
+    n->count_dividers = 0;
+    n->dividers = NULL;
+    n->left = NULL;
+    n->right = NULL;
 }
 
 void node_delete(Node * curr){
@@ -64,13 +75,13 @@ void binary_tree_insert(int key, BinaryTree * bt){
     while(curr != NULL && curr->value != key){
         if (curr->value > key && curr->left == NULL)
         {
-            curr->left = (Node *)malloc(sizeof(Node));
+            curr->left = node_init(key);
             bt->size += 1;
             return;
         }
         if(curr->value < key && curr->right == NULL)
         {
-            curr->right = (Node *)malloc(sizeof(Node));
+            curr->right = node_init(key);
             bt->size += 1;
             return;
         }
@@ -86,6 +97,6 @@ void binary_tree_insert(int key, BinaryTree * bt){
     }
 }
 
-int main(){
-    return 0;
-}
+// int main(){
+//     return 0;
+// }
