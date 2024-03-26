@@ -2,14 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-typedef struct Node Node;
+#include "header.h"
 
-struct Node{
-    int value;
-    int count_dividers;
-    Node ** dividers;
-
-};
 
 Node *find_dividers(int number, Node **cache) {
     Node *node = (Node *)malloc(sizeof(Node));
