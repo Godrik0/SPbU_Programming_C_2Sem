@@ -154,6 +154,6 @@ int main(){
 
     free_array_2d(t);
     free_array_2d(t2);
-    system("pause");
+    //system("pause");
     return 0;
 }
