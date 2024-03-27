@@ -26,16 +26,18 @@ Node * node_init(int key){
     n->right = NULL;
 }
 
-void node_delete(Node * curr){
+void node_free(Node * curr){
     if(curr != NULL){
-        node_delete(curr->left);
-        node_delete(curr->right);
+        node_free(curr->left);
+        node_free(curr->right);
+        free(curr->dividers);
         free(curr);
     }
 }
 
 void binary_tree_free(BinaryTree * bt){
-    node_delete(bt->root);
+    node_free(bt->root);
+    free(bt);
 }
 
 void node_print(Node * curr){
@@ -96,7 +98,3 @@ void binary_tree_insert(int key, BinaryTree * bt){
         }
     }
 }
-
-// int main(){
-//     return 0;
-// }

@@ -35,6 +35,8 @@ void build_divider_tree(int number, BinaryTree * bd) {
             j++;
         }
     }
+
+    free(interim_dividers);
     
 }
 
@@ -60,6 +62,8 @@ int main(){
     print_node(binary_tree_find(32, cache));
 
     binary_tree_print(cache);
+
+    binary_tree_free(cache);
     
     return 0;
 }
