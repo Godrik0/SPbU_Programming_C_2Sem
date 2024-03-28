@@ -87,7 +87,7 @@ int match_arrays(array_2d * arr1, array_2d * arr2){
                 continue;
             }
 
-            if(arr1->data[j]->size != arr2->data[j]->size){
+            if(arr1->data[i]->size != arr2->data[j]->size){
                 continue;
             }
 
@@ -99,9 +99,9 @@ int match_arrays(array_2d * arr1, array_2d * arr2){
             {
                 int match_current = 0;
 
-                for (size_t t = 0; t < arr2->data[i]->size; t++)
+                for (size_t t = 0; t < arr2->data[j]->size; t++)
                 {
-                    if (arr1->data[i]->data[k] == arr2->data[i]->data[t] && used_elements[t] != 1)
+                    if (arr1->data[i]->data[k] == arr2->data[j]->data[t] && used_elements[t] != 1)
                     {
                         match_current = 1;
                         used_elements[t] = 1;
