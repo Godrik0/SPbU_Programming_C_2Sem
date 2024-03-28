@@ -8,11 +8,7 @@ BinaryTree * binary_tree_init(int key){
     BinaryTree * bt = (BinaryTree *)malloc(sizeof(BinaryTree));
 
     bt->size = 1;
-    bt->root = (Node *)malloc(sizeof(Node));
-
-    bt->root->value = key;
-    bt->root->left = NULL;
-    bt->root->right = NULL;
+    bt->root = node_init(key);
 
     return bt;
 }
@@ -24,6 +20,8 @@ Node * node_init(int key){
     n->dividers = NULL;
     n->left = NULL;
     n->right = NULL;
+
+    return n;
 }
 
 void node_free(Node * curr){

@@ -7,30 +7,50 @@
 
 void build_divider_tree(int number, BinaryTree * bd) {
     binary_tree_insert(number, bd);
-    int * interim_dividers = (int *)calloc(number, sizeof(int));
+    int * interim_dividers = (int *)calloc(sqrt(number), sizeof(int));
 
     int count = 0;
+    int j = 0;
     for (int i = 2; i <= sqrt(number); i++){
         if (number % i == 0)
         {
             binary_tree_insert(i, bd);
             binary_tree_insert(number / i, bd);
-
-            interim_dividers[i] = i;
-            interim_dividers[number / i] = number / i;
-            count += 2;
+            if (i != number/i)
+            {
+                interim_dividers[j++] = i;
+                interim_dividers[j++] = number / i;
+                count += 2;
+            }
+            else
+            {
+                interim_dividers[j++] = i;
+                count += 1;
+            }
+            
+            
         }
     }
 
     Node * n = binary_tree_find(number, bd);
     n->count_dividers = count;
-    n->dividers = (Node **)malloc(count * sizeof(Node));
-    int j = 0;
-    for (size_t i = 0; i < number; i++)
+
+    if (n->dividers == NULL)
+    {
+        n->dividers = (Node **)malloc(count * sizeof(Node *));
+    }
+    
+    j = 0;
+
+    for (size_t i = 0; i > count; i++)
     {
         if (interim_dividers[i] != 0)
         {
-            build_divider_tree(interim_dividers[i], bd);
+            if (binary_tree_find(interim_dividers[i], bd) == NULL)
+            {
+                build_divider_tree(interim_dividers[i], bd);
+            }
+            
             n->dividers[j] = binary_tree_find(interim_dividers[i], bd);
             j++;
         }
@@ -52,16 +72,14 @@ void print_node(Node * n){
 
 int main(){
     
-    BinaryTree * cache = binary_tree_init(32);
+    BinaryTree * cache = binary_tree_init(100000);
 
-    for (size_t i = 20; i <= 32; i++)
+    for (size_t i = 90000; i <= 100000; i++)
     {
         build_divider_tree(i, cache);
     }
 
-    print_node(binary_tree_find(32, cache));
-
-    binary_tree_print(cache);
+    //binary_tree_print(cache);
 
     binary_tree_free(cache);
     
