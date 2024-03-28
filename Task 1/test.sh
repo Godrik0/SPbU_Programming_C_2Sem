@@ -8,15 +8,16 @@ run_test() {
     result="${a: -2}"
     #echo "$result"
     if [ "$result" -eq 1 ]; then
-        echo "Test $1 passed"
+        echo -e "Test $1 \033[102mpassed\033[0m"
     else
-        echo "Test $1 failed"
+        echo -e "Test $1 \033[101mfailed\033[0m"
     fi
 
     echo -e ' \t '
 }
 
-input=("Usual_case")
+input=("Usual_case" "Example_1" "Example_2" "Example_3" "All_Null"
+"Duplicate_elements")
 
 for input_file in "${input[@]}"; do
     run_test "$input_file"
