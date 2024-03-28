@@ -7,6 +7,11 @@
 BinaryTree * binary_tree_init(int key){
     BinaryTree * bt = (BinaryTree *)malloc(sizeof(BinaryTree));
 
+    if (bt == NULL)
+    {
+        return NULL;
+    }
+    
     bt->size = 1;
     bt->root = node_init(key);
 
@@ -15,6 +20,12 @@ BinaryTree * binary_tree_init(int key){
 
 Node * node_init(int key){
     Node * n =(Node *)malloc(sizeof(Node));
+    
+    if (n == NULL)
+    {
+        return NULL;
+    }
+    
     n->value = key;
     n->count_dividers = 0;
     n->dividers = NULL;

@@ -26,9 +26,7 @@ void build_divider_tree(int number, BinaryTree * bd) {
             {
                 interim_dividers[j++] = i;
                 count += 1;
-            }
-            
-            
+            }   
         }
     }
 
@@ -42,7 +40,7 @@ void build_divider_tree(int number, BinaryTree * bd) {
     
     j = 0;
 
-    for (size_t i = 0; i > count; i++)
+    for (size_t i = 0; i < count; i++)
     {
         if (interim_dividers[i] != 0)
         {
@@ -50,37 +48,74 @@ void build_divider_tree(int number, BinaryTree * bd) {
             {
                 build_divider_tree(interim_dividers[i], bd);
             }
-            
             n->dividers[j] = binary_tree_find(interim_dividers[i], bd);
             j++;
         }
     }
 
     free(interim_dividers);
-    
 }
 
 void print_node(Node * n){
     printf("%d \n| \n", n->value );
     for (size_t i = 0; i < n->count_dividers; i++) { 
         printf("%d\n| \n", n->dividers[i]->value);
-        
     }
     printf("%d", n->count_dividers);
     printf("\n\n");
 }
 
 int main(){
-    
-    BinaryTree * cache = binary_tree_init(100000);
 
-    for (size_t i = 90000; i <= 100000; i++)
+    int start, end, input;
+    printf("Enter start: ");
+    scanf("%d", &start);
+    printf("Enter end: ");
+    scanf("%d", &end);
+    
+    if (start < 0 || end < 0 || end < start)
+    {
+        printf("Incorrect input. Restart the program.\n");
+        return 0;
+    }
+    
+    BinaryTree * cache = binary_tree_init(end);
+
+    for (size_t i = start; i <= end; i++)
     {
         build_divider_tree(i, cache);
     }
 
-    //binary_tree_print(cache);
+    printf("Output of all divisors: [1]\nOutput of the divisors of a number: [2]\n");
+    scanf("%d", &input);
+    switch (input)
+    {
+    case 1:
+        binary_tree_print(cache);
+        break;
 
+    case 2:
+        printf("Input number: ");
+        scanf("%d", &input);
+
+        Node * inp = binary_tree_find(input, cache);
+
+        if (inp != NULL)
+        {
+            print_node(inp);
+        }
+        else
+        {
+            printf("This number is missing");
+        }
+
+        break;
+
+    default:
+        printf("Incorrect input.");
+        break;
+    }
+    
     binary_tree_free(cache);
     
     return 0;
