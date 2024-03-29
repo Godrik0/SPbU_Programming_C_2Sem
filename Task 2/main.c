@@ -7,7 +7,7 @@
 
 void build_divider_tree(int number, BinaryTree * bd) {
     binary_tree_insert(number, bd);
-    int * interim_dividers = (int *)calloc(sqrt(number), sizeof(int));
+    int * interim_dividers = (int *)calloc(sqrt(number) * 2 + 3, sizeof(int));
 
     int count = 0;
     int j = 0;
