@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <array.h>
+#include "array.h"
 
 array * create_row(int num){
     array * row = (array*)malloc(sizeof(array));
@@ -12,7 +12,7 @@ array * create_row(int num){
     row->data = (int *)malloc(row->size * sizeof(int));
 
     for(size_t i = 0; i < row->size; i++){
-        printf("table[%d][%d]= ", num, i);
+        printf("table[%d][%d]= ", num, (int)i);
         scanf("%d", &row->data[i]);
     }
 
@@ -20,18 +20,18 @@ array * create_row(int num){
 
 }
 
-array_2d create_array_2d(){
-    array_2d t;
+array_2d * create_array_2d(){
+    array_2d * t = (array_2d *)malloc(sizeof(array_2d));
 
     printf("Number of columns = ");
-    scanf("%d", &t.size);
+    scanf("%d", &t->size);
 
-    t.data = (array **)malloc(t.size * sizeof(array));
+    t->data = (array **)malloc(t->size * sizeof(array));
 
-    if(t.data != NULL){
-        for (size_t i = 0; i < t.size; i++)
+    if(t->data != NULL){
+        for (size_t i = 0; i < t->size; i++)
         {
-            t.data[i] = create_row(i);
+            t->data[i] = create_row(i);
         }
         
     }
@@ -50,18 +50,20 @@ void free_array_2d(array_2d * arr){
         if (arr->data!=NULL)
         {
             free_array(arr->data[i]);
+            
         }
         
     }
+    free(arr->data);
     free(arr);
 }
 
-void print_array(array_2d t){
-    for (size_t i = 0; i < t.size; i++)
+void print_array(array_2d * t){
+    for (size_t i = 0; i < t->size; i++)
     {
-        for (size_t j = 0; j < t.data[i]->size; j++)
+        for (size_t j = 0; j < t->data[i]->size; j++)
         {
-            printf("%d ", t.data[i]->data[j]);
+            printf("%d ", t->data[i]->data[j]);
         }
         printf("\n");
     }
@@ -85,7 +87,7 @@ int match_arrays(array_2d * arr1, array_2d * arr2){
                 continue;
             }
 
-            if(arr1->data[j]->size != arr2->data[j]->size){
+            if(arr1->data[i]->size != arr2->data[j]->size){
                 continue;
             }
 
@@ -97,9 +99,9 @@ int match_arrays(array_2d * arr1, array_2d * arr2){
             {
                 int match_current = 0;
 
-                for (size_t t = 0; t < arr2->data[i]->size; t++)
+                for (size_t t = 0; t < arr2->data[j]->size; t++)
                 {
-                    if (arr1->data[i]->data[k] == arr2->data[i]->data[t] && used_elements[t] != 1)
+                    if (arr1->data[i]->data[k] == arr2->data[j]->data[t] && used_elements[t] != 1)
                     {
                         match_current = 1;
                         used_elements[t] = 1;
@@ -126,7 +128,7 @@ int match_arrays(array_2d * arr1, array_2d * arr2){
             free(used_elements);
         }
 
-        if (match_array)
+        if (!match_array)
         {
             free(used_rows);
             return 0;
@@ -140,18 +142,18 @@ int match_arrays(array_2d * arr1, array_2d * arr2){
 
 
 int main(){
-    array_2d t = create_array_2d();
-    array_2d t2 = create_array_2d();
+    array_2d * t = create_array_2d();
+    array_2d * t2 = create_array_2d();
     printf("\n\n");
     print_array(t);
     printf("\n\n");
     print_array(t2);
     printf("\n\n");
     
-    printf("Match result %d \n", match_arrays(&t, &t2));
+    printf("Match result %d \n", match_arrays(t, t2));
 
-    free_array_2d(&t);
-    free_array_2d(&t2);
-    system("pause");
+    free_array_2d(t);
+    free_array_2d(t2);
+    //system("pause");
     return 0;
 }
