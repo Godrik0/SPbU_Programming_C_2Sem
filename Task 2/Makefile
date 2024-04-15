@@ -1,16 +1,21 @@
+CC = gcc
+CFLAGS = -Wall
+OBJ = main.o divider_tree.o divider_tree_print.o cache.o
+TARGET = project.exe
 
+release: CFLAGS += -O3
+release: all
 
-project.exe : main.o cache.o divider_tree.o
-	gcc main.o -ggdb3 cache.o divider_tree.o -o project.exe -lm
+debug: CFLAGS += -g -O0
+debug: all
 
-main.o : main.c
-	gcc -c -g -ggdb3 main.c -o main.o -lm
+all : $(TARGET)
 
-cahce.o : cache.c
-	gcc -c -ggdb3  -g cache.c -o cache.o
+$(TARGET) : $(OBJ)
+	$(CC) $(OBJ) -o $@ -lm
 
-divider_tree.o : divider_tree.c
-	gcc -c -g -ggdb3 divider_tree.c -o divider_tree.o
+$(OBJ):%.o : %.c
+	$(CC) -c $(CFLAGS) $< -o $@
 
 clean:
-	rm -f *.o project.exe
+	rm *.o *.exe
