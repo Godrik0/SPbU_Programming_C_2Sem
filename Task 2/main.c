@@ -7,7 +7,7 @@
 
 int main(){
 
-    int start, end, input;
+    int start, end;
     printf("Enter start: ");
     scanf("%d", &start);
     printf("Enter end: ");

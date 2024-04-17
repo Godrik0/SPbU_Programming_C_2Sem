@@ -3,8 +3,9 @@
 #include <math.h>
 
 #include "cache.h"
+#include "divider_tree_print.h"
 
-static void print_buffer(char *buffer[], int max_Y, int max_X) {
+void print_buffer(char *buffer[], int max_Y, int max_X) {
     char name_file[] = "output.txt";
     FILE* file = fopen(name_file, "w");
     for (int i = 0; i < max_Y; i++) {
@@ -72,6 +73,26 @@ char ** combining_buffers(char ** first_buffer, char ** second_buffer, int first
     return output;
 }
 
+int number_of_digits(int x){
+    return floor(log10(x)) + 1;
+}
+
+int calculation_minimization(char ** first_buffer, int first_x, int first_y, int second_x, int second_y){
+    int i = 0;
+    for (i = first_x - 1; i >= 0; i--)
+    {
+        for (int j = 0; j < MIN(first_y, second_y); j++)
+        {
+            if (first_buffer[j][i] != ' ')
+            {
+                return i + 2;
+            }
+            
+        }        
+    }
+    return i;
+}
+
 void divider_tree_print(int first, int second, BinaryTree * cache){
     int first_max_x = number_of_digits(first);
     int first_max_y = 1;
@@ -85,7 +106,7 @@ void divider_tree_print(int first, int second, BinaryTree * cache){
 
     int minimization = 0; 
 
-    char ** temp;
+    char ** temp = 0;
 
     node_size(binary_tree_find(first, cache), 0, 0, &first_max_x, &first_max_y, 0);
     first_max_x += number_of_digits(first);
@@ -110,7 +131,6 @@ void divider_tree_print(int first, int second, BinaryTree * cache){
         minimization = calculation_minimization(first_buffer, first_max_x, first_max_y, second_max_x, second_max_y);
 
         temp = combining_buffers(first_buffer, second_buffer, first_max_x, first_max_y, second_max_x, second_max_y, minimization);
-        print_buffer(temp, MAX(first_max_y, second_max_y), MAX(minimization + second_max_x, first_max_x));
 
         delete_buffer(second_buffer, second_max_y);
         delete_buffer(first_buffer, first_max_y);
@@ -119,11 +139,8 @@ void divider_tree_print(int first, int second, BinaryTree * cache){
         first_max_x = MAX(minimization + second_max_x, first_max_x);
         first_max_y = MAX(first_max_y, second_max_y);
     }
+    print_buffer(temp, MAX(first_max_y, second_max_y), MAX(minimization + second_max_x, first_max_x));
     delete_buffer(temp, MAX(first_max_y, second_max_y));
-}
-
-int number_of_digits(int x){
-    return floor(log10(x)) + 1;
 }
 
 void update_max_size(int current_x, int current_y, int * max_x, int * max_y){
@@ -271,20 +288,4 @@ void fill_buffer_node(Node * n, char ** buffer, int current_x, int current_y, in
     
     update_max_size(current_x, current_y, max_x, max_y);
 
-}
-
-int calculation_minimization(char ** first_buffer, int first_x, int first_y, int second_x, int second_y){
-    int i = first_x - 1;
-    for (i; i >= 0; i--)
-    {
-        for (int j = 0; j < MIN(first_y, second_y); j++)
-        {
-            if (first_buffer[j][i] != ' ')
-            {
-                return i + 2;
-            }
-            
-        }        
-    }
-    return i;
 }
