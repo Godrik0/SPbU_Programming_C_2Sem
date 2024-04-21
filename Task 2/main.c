@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "cache.h"
+#include "binary_tree.h"
+#include "divider_tree.h"
 #include "divider_tree_print.h"
 
 int main(){
@@ -26,7 +27,6 @@ int main(){
         build_divider_tree(i, cache);
     }
 
-    
     divider_tree_print(start, end, cache);
     
     binary_tree_free(cache);

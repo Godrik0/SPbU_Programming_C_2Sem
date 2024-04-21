@@ -1,8 +1,5 @@
-#ifndef CACHE_H_
-#define CACHE_H_
-
-#define MAX(a,b) ({int _a = (a), _b = (b); _a > _b ? _a : _b; })
-#define MIN(a,b) ({int _a = (a), _b = (b); _a < _b ? _a : _b; })
+#ifndef BINARY_TREE_H_
+#define BINARY_TREE_H_
 
 typedef struct Node Node;
 
@@ -21,15 +18,7 @@ typedef struct
     Node * root;
 } BinaryTree;
 
-typedef struct 
-{
-    int height;
-    int width;
-} size;
-
 BinaryTree * binary_tree_init(int key);
-
-void build_divider_tree(int number, BinaryTree * bd);
 
 Node * node_init(int key);
 

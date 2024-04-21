@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "cache.h"
+#include "binary_tree.h"
 
 BinaryTree * binary_tree_init(int key){
     BinaryTree * bt = (BinaryTree *)malloc(sizeof(BinaryTree));
@@ -47,20 +47,6 @@ void node_free(Node * curr){
 void binary_tree_free(BinaryTree * bt){
     node_free(bt->root);
     free(bt);
-}
-
-void node_print(Node * curr){
-    if (curr != NULL)
-    {
-        node_print(curr->left);
-        printf("%d ", curr->value);
-        node_print(curr->right);
-    }   
-}
-
-void binary_tree_print(BinaryTree * bt){
-    node_print(bt->root);
-    printf("\n");
 }
 
 Node * binary_tree_find(int key, BinaryTree * bt){
