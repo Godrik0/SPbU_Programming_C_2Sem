@@ -2,49 +2,70 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "cache.h"
+#include "binary_tree.h"
 #include "divider_tree_print.h"
 
-void print_buffer(char *buffer[], int max_Y, int max_X) {
+static int max(int first, int second){
+    if (first >= second)
+        return first;  
+    else 
+        return second; 
+}
+
+static int min(int first, int second){
+    if (first < second)
+        return first;  
+    else 
+        return second; 
+}
+
+void print_buffer(Buffer * buffer) {
     char name_file[] = "output.txt";
     FILE* file = fopen(name_file, "w");
-    for (int i = 0; i < max_Y; i++) {
-        for(int j = 0; j < max_X; j++) {
-            fprintf(file, "%c", buffer[i][j]);
+    for (int i = 0; i < buffer->y; i++) {
+        for(int j = 0; j < buffer->x; j++) {
+            fprintf(file, "%c", buffer->data[i][j]);
         }
         fprintf(file, "\n");
     }
     fclose(file);
 }
 
-char** create_buffer(int rows, int cols) {
-    char **buffer = (char**)malloc(rows * sizeof(char*));
-    for (int i = 0; i < rows; i++) {
-        buffer[i] = (char *)malloc(cols * sizeof(char));
-        for (int j = 0; j < cols; j++) {
-            buffer[i][j] = ' ';
+Buffer * create_buffer(int cols, int rows) {
+    Buffer *buffer = (Buffer*)malloc(sizeof(Buffer));
+    buffer->data = (char**)malloc(cols * sizeof(char*));
+    buffer->x = rows;
+    buffer->y = cols;
+    for (int i = 0; i < cols; i++) {
+        buffer->data[i] = (char *)malloc(rows * sizeof(char));
+        for (int j = 0; j < rows; j++) {
+            buffer->data[i][j] = ' ';
         }
     }
     return buffer;
 }
 
-void delete_buffer(char** buffer, int rows){
-    for (int i = 0; i < rows; i++)
+void delete_buffer(Buffer * buffer){
+    for (int i = 0; i < buffer->y; i++)
     {
-        free(buffer[i]);
+        free(buffer->data[i]);
     }
+    free(buffer->data);
     free(buffer);
 }
 
-char ** combining_buffers(char ** first_buffer, char ** second_buffer, int first_x, int first_y, int second_x, int second_y, int minimization){
-    char **output = create_buffer(MAX(first_y, second_y), MAX(minimization + second_x, first_x));
+Buffer * combining_buffers(Buffer * first_buffer, Buffer * second_buffer,
+                          int minimization){
+    Buffer * output = create_buffer(max(first_buffer->y, second_buffer->y),
+                                    max(minimization + second_buffer->x, 
+                                        first_buffer->x));
     int x = 0;
     int y = 0;
-    for (x = 0; x < first_x; x++)
+    for (x = 0; x < first_buffer->x; x++)
     {
-        for (y = 0; y < first_y; y++)
+        for (y = 0; y < first_buffer->y; y++)
         {
-            output[y][x] = first_buffer[y][x];
+            output->data[y][x] = first_buffer->data[y][x];
         }
         
     }
@@ -52,20 +73,20 @@ char ** combining_buffers(char ** first_buffer, char ** second_buffer, int first
     x = minimization;
     y = 0;
 
-    for (int i = 0; i < second_x; i++)
+    for (int i = 0; i < second_buffer->x; i++)
     {
-        for (int j = 0; j < second_y; j++)
+        for (int j = 0; j < second_buffer->y; j++)
         {
-            output[y+j][x+i] = second_buffer[j][i];
+            output->data[y+j][x+i] = second_buffer->data[j][i];
         }
         
     }
 
     for (int i = 0; i <= minimization; i++)
     {
-        if (output[0][i] == ' ')
+        if (output->data[0][i] == ' ')
         {
-            output[0][i] = '-';
+            output->data[0][i] = '-';
         }
         
     }
@@ -77,13 +98,13 @@ int number_of_digits(int x){
     return floor(log10(x)) + 1;
 }
 
-int calculation_minimization(char ** first_buffer, int first_x, int first_y, int second_x, int second_y){
+int calculation_minimization(Buffer * first_buffer, Buffer * second_buffer){
     int i = 0;
-    for (i = first_x - 1; i >= 0; i--)
+    for (i = first_buffer->x - 1; i >= 0; i--)
     {
-        for (int j = 0; j < MIN(first_y, second_y); j++)
+        for (int j = 0; j < min(first_buffer->y, second_buffer->y); j++)
         {
-            if (first_buffer[j][i] != ' ')
+            if (first_buffer->data[j][i] != ' ')
             {
                 return i + 2;
             }
@@ -93,66 +114,17 @@ int calculation_minimization(char ** first_buffer, int first_x, int first_y, int
     return i;
 }
 
-void divider_tree_print(int first, int second, BinaryTree * cache){
-    int first_max_x = number_of_digits(first);
-    int first_max_y = 1;
-    int second_max_x = number_of_digits(first+1);
-    int second_max_y = 1;
-
-    int first_x = 1;
-    int first_y = 1;
-    int second_x = 1;
-    int second_y = 1;
-
-    int minimization = 0; 
-
-    char ** temp = 0;
-
-    node_size(binary_tree_find(first, cache), 0, 0, &first_max_x, &first_max_y, 0);
-    first_max_x += number_of_digits(first);
-    first_max_y++;
-    char **first_buffer = create_buffer(first_max_y, first_max_x);
-    fill_buffer_node(binary_tree_find(first, cache), first_buffer, 0, 0, &first_x, &first_y, 0);
-
-    for (int i = first + 1; i <= second; i++)
-    {
-        second_max_x = number_of_digits(i);
-        second_max_y = 1;
-        second_x = 1;
-        second_y = 1;
-
-        node_size(binary_tree_find(i, cache), 0, 0, &second_max_x, &second_max_y, 0);
-        second_max_x += number_of_digits(i);
-        second_max_y++;
-
-        char **second_buffer = create_buffer(second_max_y, second_max_x);
-        fill_buffer_node(binary_tree_find(i, cache), second_buffer, 0, 0, &second_x, &second_y, 0);
-        
-        minimization = calculation_minimization(first_buffer, first_max_x, first_max_y, second_max_x, second_max_y);
-
-        temp = combining_buffers(first_buffer, second_buffer, first_max_x, first_max_y, second_max_x, second_max_y, minimization);
-
-        delete_buffer(second_buffer, second_max_y);
-        delete_buffer(first_buffer, first_max_y);
-        first_buffer = temp;
-
-        first_max_x = MAX(minimization + second_max_x, first_max_x);
-        first_max_y = MAX(first_max_y, second_max_y);
-    }
-    print_buffer(temp, MAX(first_max_y, second_max_y), MAX(minimization + second_max_x, first_max_x));
-    delete_buffer(temp, MAX(first_max_y, second_max_y));
-}
-
 void update_max_size(int current_x, int current_y, int * max_x, int * max_y){
-    *max_x = MAX(current_x, *max_x);
-    *max_y = MAX(current_y, *max_y);    
+    *max_x = max(current_x, *max_x);
+    *max_y = max(current_y, *max_y);    
 }
 
-void node_size(Node * n, int current_x, int current_y, int * max_x, int * max_y, int level){
+void node_size(Node * n, int current_x, int current_y, 
+               int * max_x, int * max_y, int level){
     if (n->count_dividers == 0)
     {
         update_max_size(current_x + number_of_digits(n->value), current_y,
-        max_x, max_y);
+                        max_x, max_y);
         return;
     }
     
@@ -188,7 +160,8 @@ void node_size(Node * n, int current_x, int current_y, int * max_x, int * max_y,
         {
             current_x += 1;
             int temp_max_x = 1;
-            node_size(n->dividers[i], ++current_x, current_y, &temp_max_x, max_y, level + 1);
+            node_size(n->dividers[i], ++current_x, current_y, &temp_max_x, 
+                      max_y, level + 1);
             current_x += number_of_digits(n->dividers[i]->value) - 1;
 
             int temp_min_x = temp_max_x - current_x;
@@ -221,7 +194,8 @@ void print_number(int number, char ** buffer, int current_x, int current_y){
     }
 }
 
-void fill_buffer_node(Node * n, char ** buffer, int current_x, int current_y, int * max_x, int * max_y, int level){
+static void fill_buffer_node(Node * n, char ** buffer, int current_x, 
+                        int current_y, int * max_x, int * max_y, int level){
     print_number(n->value, buffer, current_x, current_y);
     if (n->count_dividers == 0)
     {
@@ -235,7 +209,8 @@ void fill_buffer_node(Node * n, char ** buffer, int current_x, int current_y, in
             current_y++;
             buffer[current_y++][current_x] = '|';
             int temp_max_y = 1;
-            fill_buffer_node(n->dividers[i], buffer, current_x, current_y, max_x, &temp_max_y, level + 1);   
+            fill_buffer_node(n->dividers[i], buffer, current_x, current_y,
+                             max_x, &temp_max_y, level + 1);   
 
             int temp_min_y = temp_max_y - current_y;
             if (n->count_dividers - 1 == i)
@@ -264,7 +239,8 @@ void fill_buffer_node(Node * n, char ** buffer, int current_x, int current_y, in
         {
             buffer[current_y][++current_x] = '-';
             int temp_max_x = 1;
-            fill_buffer_node(n->dividers[i], buffer, ++current_x, current_y, &temp_max_x, max_y, level + 1);
+            fill_buffer_node(n->dividers[i], buffer, ++current_x, 
+                             current_y, &temp_max_x, max_y, level + 1);
             current_x += number_of_digits(n->dividers[i]->value) - 1;
 
             int temp_min_x = temp_max_x - current_x;
@@ -288,4 +264,58 @@ void fill_buffer_node(Node * n, char ** buffer, int current_x, int current_y, in
     
     update_max_size(current_x, current_y, max_x, max_y);
 
+}
+
+void divider_tree_print(int start, int end, BinaryTree * cache){
+    int first_max_x = number_of_digits(start);
+    int first_max_y = 1;
+    int second_max_x = number_of_digits(start+1);
+    int second_max_y = 1;
+
+    int first_x = 1;
+    int first_y = 1;
+    int second_x = 1;
+    int second_y = 1;
+
+    int minimization = 0; 
+
+    Buffer * temp = 0;
+
+    node_size(binary_tree_find(start, cache), 0, 0, 
+              &first_max_x, &first_max_y, 0);
+    first_max_x += number_of_digits(start);
+    first_max_y++;
+
+    Buffer * first_buffer = create_buffer(first_max_y, first_max_x);
+    fill_buffer_node(binary_tree_find(start, cache), first_buffer->data, 0, 0, 
+                     &first_x, &first_y, 0);
+
+    for (int i = start + 1; i <= end; i++)
+    {
+        second_max_x = number_of_digits(i);
+        second_max_y = 1;
+        second_x = 1;
+        second_y = 1;
+        node_size(binary_tree_find(i, cache), 0, 0, 
+                  &second_max_x, &second_max_y, 0);
+        second_max_x += number_of_digits(i);
+        second_max_y++;
+
+        Buffer * second_buffer = create_buffer(second_max_y, second_max_x);
+        fill_buffer_node(binary_tree_find(i, cache), second_buffer->data, 0, 0, 
+                         &second_x, &second_y, 0);
+        
+        minimization = calculation_minimization(first_buffer, second_buffer);
+
+        temp = combining_buffers(first_buffer, second_buffer, minimization);
+
+        delete_buffer(second_buffer);
+        delete_buffer(first_buffer);
+        first_buffer = temp;
+
+        first_max_x = max(minimization + second_max_x, first_max_x);
+        first_max_y = max(first_max_y, second_max_y);
+    }
+    print_buffer(temp);
+    delete_buffer(temp);
 }

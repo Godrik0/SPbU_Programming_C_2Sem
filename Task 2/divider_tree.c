@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "cache.h"
+#include "divider_tree.h"
 
 int compare_int(const void *a, const void *b) {
     int a1 = *(const int *)a;
@@ -34,7 +34,7 @@ void build_divider_tree(int number, BinaryTree * bd) {
         }
     }
 
-    qsort(interim_dividers, NN, sizeof(*interim_dividers),compare_int);
+    qsort(interim_dividers, NN, sizeof(*interim_dividers), compare_int);
 
     Node * n = binary_tree_find(number, bd);
     n->count_dividers = count;
