@@ -5,13 +5,14 @@ int main()
 {
     cstring * s = cstring_create("qwerty");
 
-    cstring_insert(s, "svosvosvosvosvo", 4);
+    cstring_insert(s, "qazwsx", 4);
 
-    cstring_insert(s, "zzzzzzzzz", 19);
+    cstring * sub = cstring_substring(s, 3, 6);
 
-    printf("%s\n", s->data);
+    printf("%s\n", sub->data);
 
     cstring_delete(s);
+    cstring_delete(sub);
     return 0;
 
 }
