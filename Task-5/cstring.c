@@ -95,6 +95,49 @@ cstring * cstring_substring(cstring * str, int sub_start, int sub_lenght)
     return NULL;
 }
 
+static void bad_character_heuristic(cstring const * str, int * bad_char)
+{
+    for (int i = 0; i < 256; i++)
+    {
+        bad_char[i] = -1;
+    }
+
+    for (int i = 0; i < str->length; i++)
+    {
+        bad_char[(int)str->data[i]] = i;
+    }
+    
+}
+
+int cstring_find(cstring * text, cstring * pat)
+{
+    int bad_char[256];
+
+    bad_character_heuristic(pat, bad_char);
+
+    int i = 0;
+    int last = pat->length - 1;
+
+    while (i < text->length - last)
+    {
+        int j = last;
+
+        while (j >= 0 && pat->data[j] == text->data[i + j])
+        {
+            j--;    
+        }
+        
+        if (j == -1)
+        {
+            return i;
+        }
+
+        i += max(last - bad_char[(int)text->data[last + i]], 1);
+    }
+    
+    return -1;
+}
+
 char * cstring_copy_char(const char * s)
 {
     int len = my_strlen(s);
