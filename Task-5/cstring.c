@@ -81,7 +81,7 @@ cstring * cstring_substring(cstring * str, int sub_start, int sub_lenght)
 {
     if (sub_start < str->length)
     {
-        char * tmp = (char *)malloc(sub_lenght << 1);
+        char * tmp = (char *)malloc(sub_lenght);
         
         my_memcpy(tmp, str->data + sub_start, sub_lenght);
 
@@ -95,34 +95,34 @@ cstring * cstring_substring(cstring * str, int sub_start, int sub_lenght)
     return NULL;
 }
 
-static void bad_character_heuristic(cstring const * str, int * bad_char)
+static void bad_character_heuristic(const char * str, int * bad_char)
 {
     for (int i = 0; i < 256; i++)
     {
         bad_char[i] = -1;
     }
 
-    for (int i = 0; i < str->length; i++)
+    for (int i = 0; i < my_strlen(str); i++)
     {
-        bad_char[(int)str->data[i]] = i;
+        bad_char[(int)str[i]] = i;
     }
     
 }
 
-int cstring_find(cstring * text, cstring * pat)
+int cstring_find(const cstring * text, const char * pat, const int pos)
 {
     int bad_char[256];
 
     bad_character_heuristic(pat, bad_char);
 
-    int i = 0;
-    int last = pat->length - 1;
+    int i = pos;
+    int last = my_strlen(pat) - 1;
 
     while (i < text->length - last)
     {
         int j = last;
 
-        while (j >= 0 && pat->data[j] == text->data[i + j])
+        while (j >= 0 && pat[j] == text->data[i + j])
         {
             j--;    
         }
@@ -136,6 +136,55 @@ int cstring_find(cstring * text, cstring * pat)
     }
     
     return -1;
+}
+
+cstring ** cstring_split(const cstring * str, const char * separator)
+{
+    cstring ** result = 0;
+    int count_token = 0;
+    int pos = 0;
+    int sep_length = my_strlen(separator);
+
+    while ((pos = cstring_find(str, separator, pos)) != -1)
+    {
+        pos += sep_length;
+        count_token++;   
+    }
+
+    result = (cstring **)malloc(sizeof(cstring *) * count_token + 1);
+    
+    char * start = str->data;
+    pos = 0;
+    int index = 0;
+    int token_length = 0;
+    while ((pos = cstring_find(str, separator, pos)) != -1)
+    {
+        token_length = pos - (start - str->data);
+        char *buffer = (char *)malloc(token_length + 1);
+
+        my_memcpy(buffer, start, token_length);
+        buffer[token_length] = '\0';
+
+        result[index++] = cstring_create(buffer);
+        
+        free(buffer);
+
+        start += token_length + sep_length;
+        pos += sep_length;
+    }
+    
+    int length = my_strlen(start);
+    char *last_buffer = (char *)malloc(length + 1);
+    my_memcpy(last_buffer, start, length);
+    last_buffer[length] = '\0';
+    
+    result[index] = cstring_create(last_buffer);
+    
+    free(last_buffer);
+    
+    result[index + 1] = NULL;
+
+    return result;
 }
 
 char * cstring_copy_char(const char * s)

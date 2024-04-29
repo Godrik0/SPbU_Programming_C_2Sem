@@ -39,3 +39,14 @@ void my_memcpy(void * to, const void * from, int bytes)
         chto[i] = chfrom[i];
     }
 } 
+
+void my_memset(void * memptr, int val, int num)
+{
+    char * charmemptr = (char *)memptr;
+
+    for (int i = 0; i < num; i++)
+    {
+        charmemptr[i] = val; 
+    }
+
+}
