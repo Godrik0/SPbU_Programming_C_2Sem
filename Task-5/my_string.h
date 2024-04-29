@@ -22,6 +22,8 @@
 
     void my_memcpy(void * to, const void * from, int bytes);
 
+    void my_memset(void * memptr, int val, int num);
+
 #endif
 
 #endif
