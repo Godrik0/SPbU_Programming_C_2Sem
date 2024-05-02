@@ -1,21 +1,24 @@
 CC = gcc
-CFLAGS = 
-OBJ = main.o my_string.o cstring.o
-TARGET = project.exe
+CFLAGS = -Wall -g
+INCLUDE_DIR = ./include
 
-release: CFLAGS += -O3
-release: all
+SRC_DIR = ./src
+SRC = $(wildcard $(SRC_DIR)/*.c)
+OBJ = $(SRC:.c=.o)
 
-debug: CFLAGS += -Wall -g -O0
-debug: all
+TARGET_LIB = libcstring.a
+TARGET_TEST = test
 
-all : $(TARGET)
+all: $(TARGET_LIB) $(TARGET_TEST)
 
-$(TARGET) : $(OBJ)
-	$(CC) $(OBJ) -o $@ -lm
+$(TARGET_LIB): $(OBJ)
+	ar rcs $@ $^
 
-$(OBJ):%.o : %.c
-	$(CC) -c $(CFLAGS) $< -o $@
+$(TARGET_TEST): $(TARGET_LIB) test.c
+	$(CC) $(CFLAGS) -o $@ test.c -I$(INCLUDE_DIR) -L. -lcstring
+
+%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c -o $@ $< -I$(INCLUDE_DIR)
 
 clean:
-	rm *.o *.exe
+	rm -f $(OBJ) $(TARGET_LIB) $(TARGET_TEST)
