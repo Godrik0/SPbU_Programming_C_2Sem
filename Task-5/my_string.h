@@ -1,29 +1,16 @@
 #ifndef MY_STRING_H_
 #define MY_STRING_H_
 
-#if USE_STRING
-    #include <string.h>
+void my_strcpy(char *s, const char *t);
 
-    #define my_strlen strlen
-    #define my_strcpy strcpy
-    #define my_strcat strcat
-    #define my_strcmp strcmp
-    #define my_memcpy memcpy
+int my_strlen(const char *str);
 
-#else
+void my_strcat(char *to, const char *from);
 
-    void my_strcpy(char *s, const char *t);
+int my_strcmp(const char *s, const char *t);
 
-    int my_strlen(const char *str);
+void my_memcpy(void * to, const void * from, int bytes);
 
-    void my_strcat(char *to, const char *from);
-
-    int my_strcmp(const char *s, const char *t);
-
-    void my_memcpy(void * to, const void * from, int bytes);
-
-    void my_memset(void * memptr, int val, int num);
-
-#endif
+void my_memset(void * memptr, int val, int num);
 
 #endif

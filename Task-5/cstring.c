@@ -76,7 +76,7 @@ void cstring_insert(cstring * to, const char * from, int pos)
         }
     }
 }
-//Добавить обработку ошибок при sub_start > lenght
+
 cstring * cstring_substring(cstring * str, int sub_start, int sub_lenght)
 {
     if (sub_start < str->length)
@@ -185,6 +185,25 @@ cstring ** cstring_split(const cstring * str, const char * separator)
     result[index + 1] = NULL;
 
     return result;
+}
+
+int cstring_compare(const cstring * str1, const cstring * str2)
+{
+    if (str1->length != str2->length)
+    {
+        return str1->length - str2->length;
+    }
+    
+    const char *ptr1 = str1->data;
+    const char *ptr2 = str2->data;
+    
+    while (*ptr1 && (*ptr1 == *ptr2))
+    {
+        ptr1++;
+        ptr2++;
+    }
+    
+    return *(unsigned char *)ptr1 - *(unsigned char *)ptr2;
 }
 
 char * cstring_copy_char(const char * s)
