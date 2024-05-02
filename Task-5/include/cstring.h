@@ -26,7 +26,7 @@ static inline void cstring_append(cstring *cs, const char *s)
 
 static inline int cstring_empty(const cstring *cs)
 {
-	return (cs->data == NULL && cs->length == 0);
+	return (cs->data == 0 && cs->length == 0);
 }
 
 #endif

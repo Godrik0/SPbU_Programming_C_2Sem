@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "my_string.h"
-#include "cstring.h"
+#include "include/cstring.h"
 
 static int max(int first, int second){
     if (first >= second)
