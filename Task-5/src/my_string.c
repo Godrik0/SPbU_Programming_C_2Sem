@@ -1,5 +1,6 @@
 #include "my_string.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 int my_strlen(const char *str)
 {
@@ -29,16 +30,22 @@ int my_strcmp(const char *s,const char *t)
     return *s - *t;
 }
 
-void my_memcpy(void * to, const void * from, int bytes)
-{
-    char * chto = (char *)to;
-    char * chfrom = (char *)from;
+void my_memcpy(void *to, const void *from, int bytes) {
+    char *chto = (char *)to;
+    const char *chfrom = (const char *)from;
 
-    for (int i = 0; i < bytes; i++)
-    {
-        chto[i] = chfrom[i];
+    char *temp_buffer = (char *)malloc(bytes);
+   
+    for (int i = 0; i < bytes; i++) {
+        temp_buffer[i] = chfrom[i];
     }
-} 
+
+    for (int i = 0; i < bytes; i++) {
+        chto[i] = temp_buffer[i];
+    }
+
+    free(temp_buffer);
+}
 
 void my_memset(void * memptr, int val, int num)
 {
