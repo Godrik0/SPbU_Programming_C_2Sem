@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "my_string.h"
+#include "private_cstring.h"
 #include "include/cstring.h"
 
 static int max(int first, int second){
@@ -37,43 +38,45 @@ void cstring_delete(cstring * str)
 
 void cstring_insert(cstring * to, const char * from, int pos)
 {
+    if (to == NULL || from == NULL || to->data == NULL) {
+        return;
+    }
+
+    if (pos < 0 || pos > to->length) {
+        return;
+    }
+
     int from_len, new_len;
     char * tmp;
 
-    if (pos < to->length && to->data != NULL)
+    from_len = my_strlen(from);
+    new_len = to->length + from_len;
+
+    if (from_len == 0) {
+        return;
+    }
+    
+    if (new_len < to->capacity) {
+        my_memcpy(to->data + pos + from_len, to->data + pos, new_len - pos);
+        my_memcpy(to->data + pos, from, from_len);
+
+        to->data[new_len] = '\0';
+    }
+    else 
     {
-        from_len = my_strlen(from);
-        new_len = to->length + from_len;
+        tmp = (char *)malloc(new_len + 1);
 
-        if (from_len == 0)
-        {
-            return;
-        }
+        my_memcpy(tmp, to->data, pos);
+        my_memcpy(tmp + pos, from, from_len);
+        my_memcpy(tmp + pos + from_len, to->data + pos, to->length - pos);
+        tmp[new_len] = '\0';
+
+        free(to->data);
+
+        to->length = new_len;
+        to->data = tmp;
         
-
-        if (new_len < to->capacity)
-        {
-            my_memcpy(to->data + pos + from_len, to->data + pos, new_len - pos + 1);
-            my_memcpy(to->data + pos, from, from_len);
-
-            to->data[new_len] = '\0';
-        }
-        else
-        {
-            tmp = (char *)malloc(max(to->capacity, new_len + 1));
-
-            my_memcpy(tmp, to->data, pos);
-            my_memcpy(tmp + pos, from, from_len);
-            my_memcpy(tmp + pos + from_len, to->data + pos, to->length + 1);
-            tmp[new_len] = '\0';
-
-            free(to->data);
-
-            to->length = new_len;
-            to->data = tmp;
-            
-            cstring_resize(to, new_len << 1);
-        }
+        cstring_resize(to, new_len << 1);
     }
 }
 
@@ -81,9 +84,11 @@ cstring * cstring_substring(cstring * str, int sub_start, int sub_lenght)
 {
     if (sub_start < str->length)
     {
-        char * tmp = (char *)malloc(sub_lenght);
+        char * tmp = (char *)malloc(sub_lenght + 1);
         
         my_memcpy(tmp, str->data + sub_start, sub_lenght);
+
+        tmp[sub_lenght] = '\0';
 
         cstring * result = cstring_create(tmp);
 
@@ -118,7 +123,7 @@ int cstring_find(const cstring * text, const char * pat, const int pos)
     int i = pos;
     int last = my_strlen(pat) - 1;
 
-    while (i < text->length - last)
+    while (i <= text->length - last)
     {
         int j = last;
 
@@ -141,7 +146,7 @@ int cstring_find(const cstring * text, const char * pat, const int pos)
 cstring ** cstring_split(const cstring * str, const char * separator)
 {
     cstring ** result = 0;
-    int count_token = 0;
+    int count_token = 2;
     int pos = 0;
     int sep_length = my_strlen(separator);
 
@@ -151,7 +156,7 @@ cstring ** cstring_split(const cstring * str, const char * separator)
         count_token++;   
     }
 
-    result = (cstring **)malloc(sizeof(cstring *) * count_token + 1);
+    result = (cstring **)malloc(sizeof(cstring *) * (count_token));
     
     char * start = str->data;
     pos = 0;
