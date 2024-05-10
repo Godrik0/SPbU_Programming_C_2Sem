@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "my_string.h"
 #include "private_cstring.h"
-#include "include/cstring.h"
+#include "../include/cstring.h"
 
 static int max(int first, int second){
     if (first >= second)
@@ -24,10 +25,22 @@ cstring * cstring_create(const char *s)
     cstring * str = (cstring *)malloc(sizeof(cstring));
     
     str->length = my_strlen(s);
-    str->capacity = str->length << 1;
+    str->size_allocated_memory = str->length << 1;
     str->data = cstring_copy_char(s);
 
     return str;
+}
+
+cstring * cstring_allocate(int length)
+{
+    cstring * result = (cstring *)malloc(sizeof(cstring));
+    int size_allocated_memory = (length << 1) + 1;
+
+    result->data = (char *)malloc(sizeof(char) * size_allocated_memory);
+    result->length = length;
+    result->size_allocated_memory = size_allocated_memory;
+
+    return result;
 }
 
 void cstring_delete(cstring * str)
@@ -38,7 +51,9 @@ void cstring_delete(cstring * str)
 
 void cstring_insert(cstring * to, const char * from, int pos)
 {
-    if (to == NULL || from == NULL || to->data == NULL) {
+    assert(to->data != NULL && to != NULL);
+
+    if (from == NULL) {
         return;
     }
 
@@ -56,15 +71,18 @@ void cstring_insert(cstring * to, const char * from, int pos)
         return;
     }
     
-    if (new_len < to->capacity) {
+    if (new_len < to->size_allocated_memory) 
+    {
+        //Сдвигаем вправо данные исходной строки, после помещаем в освободившееся место pos
         my_memcpy(to->data + pos + from_len, to->data + pos, new_len - pos);
         my_memcpy(to->data + pos, from, from_len);
 
         to->data[new_len] = '\0';
+        to->length = new_len; //Добавить тесты (если отсутвует эта строка)
     }
     else 
     {
-        tmp = (char *)malloc(new_len + 1);
+        tmp = (char *)malloc(new_len << 1);
 
         my_memcpy(tmp, to->data, pos);
         my_memcpy(tmp + pos, from, from_len);
@@ -75,24 +93,20 @@ void cstring_insert(cstring * to, const char * from, int pos)
 
         to->length = new_len;
         to->data = tmp;
-        
-        cstring_resize(to, new_len << 1);
+        to->size_allocated_memory = new_len << 1;
     }
 }
 
-cstring * cstring_substring(cstring * str, int sub_start, int sub_lenght)
+
+cstring * cstring_substring(cstring * str, int sub_start, int sub_length)
 {
-    if (sub_start < str->length)
+    if ((sub_start + sub_length) < str->length)
     {
-        char * tmp = (char *)malloc(sub_lenght + 1);
+        cstring * result = cstring_allocate(sub_length);
         
-        my_memcpy(tmp, str->data + sub_start, sub_lenght);
+        my_memcpy(result->data, str->data + sub_start, sub_length);
 
-        tmp[sub_lenght] = '\0';
-
-        cstring * result = cstring_create(tmp);
-
-        free(tmp);
+        result->data[sub_length] = '\0';
 
         return result;
     }
@@ -145,47 +159,45 @@ int cstring_find(const cstring * text, const char * pat, const int pos)
 
 cstring ** cstring_split(const cstring * str, const char * separator)
 {
-    cstring ** result = 0;
-    int count_token = 2;
+    // название (один из элементов массива - нул) 
+    int count_substring_and_NULL = 2;
     int pos = 0;
     int sep_length = my_strlen(separator);
 
     while ((pos = cstring_find(str, separator, pos)) != -1)
     {
         pos += sep_length;
-        count_token++;   
+        count_substring_and_NULL++;
     }
 
-    result = (cstring **)malloc(sizeof(cstring *) * (count_token));
+    cstring ** result = (cstring **)malloc(sizeof(cstring *) * (count_substring_and_NULL));
     
     char * start = str->data;
     pos = 0;
     int index = 0;
-    int token_length = 0;
+
     while ((pos = cstring_find(str, separator, pos)) != -1)
     {
-        token_length = pos - (start - str->data);
-        char *buffer = (char *)malloc(token_length + 1);
+        int token_length = pos - (start - str->data);
 
-        my_memcpy(buffer, start, token_length);
-        buffer[token_length] = '\0';
+        cstring * tmp = cstring_allocate(token_length);
 
-        result[index++] = cstring_create(buffer);
-        
-        free(buffer);
+        my_memcpy(tmp->data, start, token_length);
+        tmp->data[token_length] = '\0';
+
+        result[index++] = tmp;
 
         start += token_length + sep_length;
         pos += sep_length;
     }
     
-    int length = my_strlen(start);
-    char *last_buffer = (char *)malloc(length + 1);
-    my_memcpy(last_buffer, start, length);
-    last_buffer[length] = '\0';
+    // линейный проход не нужен ok
+    int length = str->length - (start - str->data);
+    cstring * tmp = cstring_allocate(length);
+    my_memcpy(tmp->data, start, length);
+    tmp->data[length] = '\0';
     
-    result[index] = cstring_create(last_buffer);
-    
-    free(last_buffer);
+    result[index] = tmp;
     
     result[index + 1] = NULL;
 
@@ -199,16 +211,12 @@ int cstring_compare(const cstring * str1, const cstring * str2)
         return str1->length - str2->length;
     }
     
-    const char *ptr1 = str1->data;
-    const char *ptr2 = str2->data;
-    
-    while (*ptr1 && (*ptr1 == *ptr2))
-    {
-        ptr1++;
-        ptr2++;
-    }
-    
-    return *(unsigned char *)ptr1 - *(unsigned char *)ptr2;
+    return my_strcmp(str1->data, str2->data);
+}
+
+int cstring_compare_char(const cstring * str1, const char str2[])
+{
+    return my_strcmp(str1->data, str2);
 }
 
 char * cstring_copy_char(const char * s)
@@ -227,5 +235,5 @@ void cstring_resize(cstring * str, int new_capacity)
     str->data = realloc(str->data, new_capacity + 1);
     str->data[new_capacity] = '\0';
 
-    str->capacity = new_capacity;
+    str->size_allocated_memory = new_capacity;
 }

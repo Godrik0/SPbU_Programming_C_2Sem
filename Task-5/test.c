@@ -10,13 +10,13 @@ void testing_cstring_create()
     cstring * str = cstring_create(test_mes);
     assert(str != NULL);
     assert(str->length == strlen(test_mes));
-    assert(str->capacity == strlen(test_mes) << 1);
+    assert(str->size_allocated_memory == strlen(test_mes) << 1);
     assert(str->data != NULL);
     assert(strcmp(str->data, test_mes) == 0);
 
     cstring_delete(str);
 
-    printf("Testing cstring_create passed!\n");
+    printf("Testing cstring create passed!\n");
 }
 
 void testing_cstring_insert_within_capacity()
@@ -26,13 +26,17 @@ void testing_cstring_insert_within_capacity()
 
     cstring * str = cstring_create(test_mes);
 
+    int memory_size = str->size_allocated_memory;
+
     cstring_insert(str, "my ", 7);
 
     assert(strcmp(str->data, expected_mes) == 0);
+    assert(str->length == strlen(expected_mes));
+    assert(memory_size == str->size_allocated_memory);
     
     cstring_delete(str);
 
-    printf("Testing cstring insert within capacity passed!\n");
+    printf("Testing cstring insert within size_allocated_memory passed!\n");
 }
 
 void testing_cstring_insert_exceed_capacity()
@@ -46,10 +50,11 @@ void testing_cstring_insert_exceed_capacity()
 
     assert(strcmp(str->data, expected_mes) == 0);
     assert(str->length == strlen(expected_mes));
+    assert(str->size_allocated_memory == (strlen(expected_mes) << 1));
     
     cstring_delete(str);
 
-    printf("Testing cstring insert exceed capacity passed!\n");
+    printf("Testing cstring insert exceed size_allocated_memory passed!\n");
 }
 
 void testing_cstring_append()
@@ -63,8 +68,30 @@ void testing_cstring_append()
 
     assert(strcmp(str->data, expected_mes) == 0);
     assert(str->length == strlen(expected_mes));
+    assert(str->size_allocated_memory == (strlen(expected_mes) << 1));
     
     cstring_delete(str);
+
+    printf("Testing cstring append passed!\n");
+}
+
+void testing_cstring_concatenation()
+{
+    const char * test_mes_1 = "Hello";
+    const char * test_mes_2 = " my World!";
+    const char * expected_mes = "Hello my World!";
+
+    cstring * str1 = cstring_create(test_mes_1);
+    cstring * str2 = cstring_create(test_mes_2);
+
+    cstring_concatenation(str1, str2);
+
+    assert(strcmp(str1->data, expected_mes) == 0);
+    assert(str1->length == strlen(expected_mes));
+    assert(str1->size_allocated_memory == (strlen(expected_mes) << 1));
+    
+    cstring_delete(str1);
+    cstring_delete(str2);
 
     printf("Testing cstring append passed!\n");
 }
@@ -93,7 +120,9 @@ void test_cstring_substring()
     cstring *sub3 = cstring_substring(str, 13, 5);
     assert(sub3 == NULL);
 
-    cstring_delete(str);
+    // Test 4
+    cstring *sub4 = cstring_substring(str, 10, 5);
+    assert(sub4 == NULL);
 
     printf("Testing cstring substring passed!\n");
 }
@@ -121,6 +150,31 @@ void test_cstring_find()
 
     cstring_delete(text);
     printf("Testing cstring find passed!\n");
+}
+
+void test_cstring_rfind() 
+{
+    cstring *text = cstring_create("Hello, World!");
+
+    // Тест 1
+    int pos1 = cstring_rfind(text, "Hello", 0);
+    assert(pos1 == 5);
+
+    // Тест 2
+    int pos2 = cstring_rfind(text, "World", 7);
+    assert(pos2 == 12);
+
+    // Тест 3
+    int pos3 = cstring_rfind(text, "World", 8);
+    assert(pos3 == -1);
+
+    // Тест 4
+    int pos4 = cstring_rfind(text, "!", 0);
+    assert(pos4 == 13);
+
+
+    cstring_delete(text);
+    printf("Testing cstring rfind passed!\n");
 }
 
 void test_cstring_split() 
@@ -173,8 +227,10 @@ int main()
     testing_cstring_insert_within_capacity();
     testing_cstring_insert_exceed_capacity();
     testing_cstring_append();
+    testing_cstring_concatenation();
     test_cstring_substring();
     test_cstring_find();
+    test_cstring_rfind();
     test_cstring_split();
 
     return 0;

@@ -43,7 +43,6 @@ void my_memcpy(void *to, const void *from, int bytes) {
     for (int i = 0; i < bytes; i++) {
         chto[i] = temp_buffer[i];
     }
-
     free(temp_buffer);
 }
 
