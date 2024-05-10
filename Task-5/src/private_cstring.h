@@ -1,7 +1,7 @@
 #ifndef PRIVATE_CSTRING_H_
 #define PRIVATE_CSTRING_H_
 
-#include "include/cstring.h"
+#include "../include/cstring.h"
 
 char * cstring_copy_char(const char * s);
 

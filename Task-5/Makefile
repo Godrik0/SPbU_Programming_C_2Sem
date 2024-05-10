@@ -18,7 +18,7 @@ $(TARGET_TEST): $(TARGET_LIB) test.c
 	$(CC) $(CFLAGS) -o $@ test.c -I$(INCLUDE_DIR) -L. -lcstring
 
 %.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) -c -o $@ $< -I$(INCLUDE_DIR)
+	$(CC) $(CFLAGS) -c -I$(INCLUDE_DIR) -o $@ $< 
 
 clean:
 	rm -f $(OBJ) $(TARGET_LIB) $(TARGET_TEST)
