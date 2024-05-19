@@ -20,6 +20,12 @@ static int min(int first, int second){
         return second; 
 }
 
+void memcpy_det(char *to, const void *from, int bytes, int len)
+{
+    my_memcpy(to, from, bytes);
+    to[len] = '\0';
+}
+
 cstring * cstring_create(const char *s)
 {
     cstring * str = (cstring *)malloc(sizeof(cstring));
@@ -49,9 +55,9 @@ void cstring_delete(cstring * str)
     free(str);
 }
 
-void cstring_insert(cstring * to, const char * from, int pos)
+void cstring_insert(cstring * to, const char * from, int pos, int from_len)
 {
-    assert(to->data != NULL && to != NULL);
+    assert(to != NULL && to->data != NULL);
 
     if (from == NULL) {
         return;
@@ -61,42 +67,36 @@ void cstring_insert(cstring * to, const char * from, int pos)
         return;
     }
 
-    int from_len, new_len;
-    char * tmp;
-
-    from_len = my_strlen(from);
-    new_len = to->length + from_len;
+    int new_len = to->length + from_len;
 
     if (from_len == 0) {
         return;
     }
     
-    if (new_len < to->size_allocated_memory) 
+    if (new_len < to->size_allocated_memory)
     {
         //Сдвигаем вправо данные исходной строки, после помещаем в освободившееся место pos
         my_memcpy(to->data + pos + from_len, to->data + pos, new_len - pos);
-        my_memcpy(to->data + pos, from, from_len);
+        memcpy_det(to->data + pos, from, from_len, new_len);
 
-        to->data[new_len] = '\0';
-        to->length = new_len; //Добавить тесты (если отсутвует эта строка)
+        to->length = new_len; //Добавить тесты (если отсутвует эта строка) 
     }
     else 
     {
-        tmp = (char *)malloc(new_len << 1);
+        int new_size_memory = new_len << 1; 
+        char * tmp = (char *)malloc(new_size_memory);
 
         my_memcpy(tmp, to->data, pos);
         my_memcpy(tmp + pos, from, from_len);
-        my_memcpy(tmp + pos + from_len, to->data + pos, to->length - pos);
-        tmp[new_len] = '\0';
+        memcpy_det(tmp + pos + from_len, to->data + pos, to->length - pos, new_len);
 
         free(to->data);
 
         to->length = new_len;
         to->data = tmp;
-        to->size_allocated_memory = new_len << 1;
+        to->size_allocated_memory = new_size_memory;
     }
 }
-
 
 cstring * cstring_substring(cstring * str, int sub_start, int sub_length)
 {
@@ -104,9 +104,7 @@ cstring * cstring_substring(cstring * str, int sub_start, int sub_length)
     {
         cstring * result = cstring_allocate(sub_length);
         
-        my_memcpy(result->data, str->data + sub_start, sub_length);
-
-        result->data[sub_length] = '\0';
+        memcpy_det(result->data, str->data + sub_start, sub_length, sub_length);
 
         return result;
     }
@@ -130,6 +128,7 @@ static void bad_character_heuristic(const char * str, int * bad_char)
 
 int cstring_find(const cstring * text, const char * pat, const int pos)
 {
+    //256 - количество чар, может быть больше!
     int bad_char[256];
 
     bad_character_heuristic(pat, bad_char);
@@ -157,9 +156,23 @@ int cstring_find(const cstring * text, const char * pat, const int pos)
     return -1;
 }
 
+int cstring_rfind(const cstring * text, const char pat)
+{
+    for (int i = text->length; i >= 0; i--)
+    {
+        if (text->data[i] == pat)
+        {
+            return i;
+        }
+        
+    }
+    
+    return -1;
+}
+
 cstring ** cstring_split(const cstring * str, const char * separator)
 {
-    // название (один из элементов массива - нул) 
+    // название (один из элементов массива - нул)
     int count_substring_and_NULL = 2;
     int pos = 0;
     int sep_length = my_strlen(separator);
@@ -182,8 +195,7 @@ cstring ** cstring_split(const cstring * str, const char * separator)
 
         cstring * tmp = cstring_allocate(token_length);
 
-        my_memcpy(tmp->data, start, token_length);
-        tmp->data[token_length] = '\0';
+        memcpy_det(tmp->data, start, token_length, token_length);
 
         result[index++] = tmp;
 
@@ -194,14 +206,19 @@ cstring ** cstring_split(const cstring * str, const char * separator)
     // линейный проход не нужен ok
     int length = str->length - (start - str->data);
     cstring * tmp = cstring_allocate(length);
-    my_memcpy(tmp->data, start, length);
-    tmp->data[length] = '\0';
+    memcpy_det(tmp->data, start, length, length);
     
     result[index] = tmp;
     
     result[index + 1] = NULL;
 
     return result;
+}
+
+cstring ** cstring_split_char(const cstring * str, const char separator)
+{
+    char sep[] = {separator, '\0'};
+    return cstring_split(str, sep);
 }
 
 int cstring_compare(const cstring * str1, const cstring * str2)
@@ -224,16 +241,15 @@ char * cstring_copy_char(const char * s)
     int len = my_strlen(s);
 
     char * tmp = (char *)malloc(len << 1);
-    my_memcpy(tmp, s, len + 1);
-    tmp[len] = '\0';
+    memcpy_det(tmp, s, len + 1, len);
 
     return tmp;
 }
 
-void cstring_resize(cstring * str, int new_capacity)
-{
-    str->data = realloc(str->data, new_capacity + 1);
-    str->data[new_capacity] = '\0';
+// void cstring_resize(cstring * str, int new_capacity)
+// {
+//     str->data = realloc(str->data, new_capacity + 1);
+//     str->data[new_capacity] = '\0';
 
-    str->size_allocated_memory = new_capacity;
-}
+//     str->size_allocated_memory = new_capacity;
+// }
